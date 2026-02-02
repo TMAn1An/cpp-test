@@ -1,2 +1,2 @@
 .vscode/            # Visual Studio Code settings
-main.exe            # Compiled main executable
+/main.exe            # Compiled main executable
