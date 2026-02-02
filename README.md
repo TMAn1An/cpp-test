@@ -1,5 +1,5 @@
 # My First C++ Project
-This project simply prints hello world
+This project simply prints hi world
 
 ## Installation
 1. Clone the repo:
