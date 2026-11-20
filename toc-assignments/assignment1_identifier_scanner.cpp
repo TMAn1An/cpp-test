@@ -1,20 +1,23 @@
 /*
  * Assignment 01 - Theory of Computation
- * Scanner to check whether a string is a valid C/C++ identifier,
+ * Scanner to verify whether a string is a valid C/C++ identifier,
  * built as a DFA (Deterministic Finite Automaton).
  *
  * Rule for an identifier:
- *   - first symbol must be a letter (A-Z, a-z) or underscore '_'
- *   - after that we can have any number of letters, digits or '_'
+ *   - it starts with a letter or underscore '_'
+ *   - followed by any string of letters, digits or '_'
  *
- * Pattern:  (L U _)(L U D U _)*
- *   L = letter, D = digit (0-9), _ = underscore
+ *   L = { _, a..z, A..Z }      (letters, underscore counted as a letter)
+ *   D = { 0..9 }               (digits)
+ *   Sigma = L U D
+ *
+ *   identifier = { Lw | w is in (L U D)* }
  *
  * DFA:
  *   Q  = {q0, q1, q2}
  *   q0 = start state
- *   q1 = accept state (we have a valid identifier so far)
- *   q2 = dead state (once we get here the string can never be valid)
+ *   q1 = final state (string read so far is a valid identifier)
+ *   q2 = dead state (once here, the string can never be valid)
  *   F  = {q1}
  */
 
@@ -27,21 +30,21 @@ using namespace std;
 // states of the DFA
 enum State { Q0 = 0, Q1 = 1, Q2 = 2 };
 
-// input symbols are grouped into 4 classes so the table stays small
-enum Symbol { LETTER = 0, DIGIT = 1, UNDERSCORE = 2, OTHER = 3 };
+// every character falls into one of these groups
+// OTHER = anything not in Sigma (like @, -, space, $)
+enum Symbol { L = 0, D = 1, OTHER = 2 };
 
-// transition table: next = delta[current state][symbol class]
-//                  LETTER  DIGIT  UNDERSCORE  OTHER
-const State delta[3][4] = {
-    /* q0 */      { Q1,     Q2,    Q1,         Q2 },
-    /* q1 */      { Q1,     Q1,    Q1,         Q2 },
-    /* q2 */      { Q2,     Q2,    Q2,         Q2 }
+// transition table: next = delta[current state][symbol]
+//                  L     D     OTHER
+const State delta[3][3] = {
+    /* q0 */      { Q1,   Q2,   Q2 },
+    /* q1 */      { Q1,   Q1,   Q2 },
+    /* q2 */      { Q2,   Q2,   Q2 }
 };
 
 Symbol classify(char c) {
-    if (isalpha((unsigned char)c)) return LETTER;
-    if (isdigit((unsigned char)c)) return DIGIT;
-    if (c == '_') return UNDERSCORE;
+    if (isalpha((unsigned char)c) || c == '_') return L;
+    if (isdigit((unsigned char)c)) return D;
     return OTHER;
 }
 
@@ -52,10 +55,9 @@ string stateName(State s) {
 }
 
 string symbolName(Symbol s) {
-    if (s == LETTER) return "letter";
-    if (s == DIGIT) return "digit";
-    if (s == UNDERSCORE) return "underscore";
-    return "other";
+    if (s == L) return "L";
+    if (s == D) return "D";
+    return "not in Sigma";
 }
 
 // C++ keywords match the pattern but can't be used as identifiers,
